@@ -3,7 +3,7 @@
 wt_db = getWindTurbineDatabase; %%donde esta la IEA
 
 %entorno tipo 1B (sin poner)
-%wt_db.IECWindClass=="IB" |
+
 
 close all
 %setPlot;
@@ -33,18 +33,9 @@ site_U     = getSite(URef,zRef,I_u,L_u);
 
 
 N = [10 10 10 10 10 10 10];
-%xi = [0.15 0.245170317 0.328843951 0.439179346 0.537671407 0.638207657 0.771743852];
-data = getIEA15MWBladeGeometryFromExcelFile;
-xi = data(:,1)';
-p                 ={@()cylinder(cd),...
-                    @snl_ffa_w3_500_iea15,...
-                    @ffa_w3_360_iea15,...
-                    @ffa_w3_330b_iea15,...
-                    @ffa_w3_301_iea15,...
-                    @ffa_w3_270b_iea15,...
-                    @ffa_w3_241_iea15,...
-                    @ffa_w3_211_iea15,...
-                    };
+xi = [0.15 0.245170317 0.328843951 0.439179346 0.537671407 0.638207657 0.771743852];
+p = {@snl_ffa_w3_500_iea15 @ffa_w3_360_iea15 @ffa_w3_330b_iea15 @ffa_w3_301_iea15 @ffa_w3_270b_iea15 @ffa_w3_241_iea15 @ffa_w3_211_iea15};
+
 mb_IEA15 = getMotherBlade(N,xi,p);
 
 plotMotherBlade(mb_IEA15,{'Mother blade'},'views',{[30 25]});
@@ -60,7 +51,7 @@ lambda0 = 8;
 [ndOptBlade,lambda_opt,CPmax] = mb2cpmaxNdBlade(b,mb,lambda0);
 
 ndc    = linspace(0.20 , 0.05 , length(N) );
-%{@cosine,@linspace,@linspace,@linspace,@linspace,@linspace,@sine}
+{@cosine,@linspace,@linspace,@linspace,@linspace,@linspace,@sine}
 thetaG = zeros(1,length(N));
 
 ndB_IEA15 = getNdBlade (N, ndc, thetaG, xi, p);
@@ -75,7 +66,6 @@ ndB_IEA15 = getNdBlade (N, ndc, thetaG, xi, p);
 %legend({'ndB'})
 %set(gcf , 'Position', [100,100,700,250])
 
-%plotNdBlade(ndB_IEA15,'Non-dimensional blade','views',{[30 25]});
+plotNdBlade(ndB_IEA15,'Non-dimensional blade','views',{[30 25]});
 
-%grid on
-        
+grid on
