@@ -5,27 +5,27 @@ close all
 
 %% Entorno
 
-wt_db = getWindTurbineDatabase;
-
-wt_db.IECWindClass=="IB"; 
+% wt_db = getWindTurbineDatabase;
+% 
+% wt_db.IECWindClass=="IB"; 
 
 
 %% Blade, motherblade y nondimensionalblade 15MW
 
 b = iea15MWBlade; 
-% plotBlade(b,{'NDB_IEA-15'});
-% plotAirfoil(b.layout.airfoili,{... 
-% 'Cylinder',...
-% 'SNL-FFA-W3-500',...
-% 'FFA-W3-360',...
-% 'FFA-W3-330b',...
-% 'FFA-W3-301',...
-% 'FFA-W3-270b',...
-% 'FFA-W3-241',...
-% 'FFA-W3-211',...
-% });
+plotBlade(b,{'IEA-15'});
+plotAirfoil(b.layout.airfoili,{... 
+'Cylinder',...
+'SNL-FFA-W3-500',...
+'FFA-W3-360',...
+'FFA-W3-330b',...
+'FFA-W3-301',...
+'FFA-W3-270b',...
+'FFA-W3-241',...
+'FFA-W3-211',...
+});
 ndb   = blade2ndBlade(b);
-% plotNdBlade(ndb,{'IEA-15'});
+plotNdBlade(ndb,{'NDB_IEA-15'});
 
 ns   = length(b.r);
 tb   = zeros(ns,1);
@@ -33,11 +33,11 @@ data = getIEA15MWBladeGeometryFromExcelFile;
 for i = 1:ns
 tb(i) = b.airfoil{i}.ndtmax*100;
 end
-% figure
-% plot(data(:,1),data(:,8)); hold on;
-% plot(data(:,1),tb); hold on;
-% xlabel('$x$[--]');
-% ylabel('$t/c$[--]');
+figure
+plot(data(:,1),data(:,8)); hold on;
+plot(data(:,1),tb); hold on;
+xlabel('$x$[--]');
+ylabel('$t/c$[--]');
 
 id_af = strings(ns,1);
 n_mb = zeros(length(b.layout.airfoili),1)';
@@ -49,7 +49,19 @@ for i = 2:length(b.layout.airfoili)
         n_mb(i) = sum(id_af==func2str(b.layout.airfoili{i}));
 end
 
-mb = getMotherBlade(n_mb',b.layout.xi(1:length(n_mb))',b.layout.airfoili);
+
+%%Cambiar la definicion de la mb
+%%mb transicion
+%%Crear funcion 2 con y sin cilindro para la mod
+%%Mirar la optima de la nueva y la vieja
+%%Hacer la distribucion de perfiles y ver cual cambiar
+%%TCM-TEP de ambas
+%%Suavizado
+%%Cpmax y lambda opt
+
+mb = getMotherBlade(data(:,1),b.layout.xi(1:length(n_mb))',b.layout.airfoili)
+plotMotherBlade(mb,{'MB_IEA15'})
+% mb = getMotherBlade(n_mb',b.layout.xi(1:length(n_mb))',b.layout.airfoili);
 % plotMotherBlade(mb,{'MB_IEA15'});
 
 % A continuación lo que hace la función iea15MWBlade:  
@@ -210,12 +222,10 @@ plot(ndBemMap.lambdaCPmax,ndBemMap.thetaCCPmax/d2r,'r *')
 %Con esto checkeamos que converge.  El nonconvergedstatesratio tiene que
 %ser próximo a 0
 
-[io,info]  = isbemconverged(ndBemMap)
+[io,info]  = isbemconverged(ndBemMap);
 
 %Con esto representamos los que no convergen (los asteriscos de la gráfica):
 
-
-%%%%%%%%%%%%%%%%%PROBLEMO AQUI
 sub_lt = info.nonConvergedStatesSUB(:,2:3);
 lk_nc  = ndBemMap.lambda(sub_lt(:,1),1);
 tk_nc  = ndBemMap.thetaC(1,sub_lt(:,2))';
@@ -263,3 +273,25 @@ xlabel('$x$[--]'); ylabel('$\theta_G[^\mathrm{o}]$');
 legend({'Optimum blade $\lambda$=6 [--]',...
        stropt,...
        'Optimum blade $\lambda$=11 [--]'},'Location','Best')
+
+theta0 = 0;
+
+% aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = getLTopt4ndBlade(numberofblades,ndb,[lambda0,theta0],,'Cp')
+
+
+% [X_tra,CPmax_tra] = getLTopt4ndBlade(b,ndTraBlade,[lambda0,0],'CP');
+% [X_pol,CPmax_pol] = getLTopt4ndBlade(b,ndPolBlade,[lambda0,0],'CP');
+% nl                = 27;
+% thetaC_i          = zeros(nl,3);
+% thetaC_i(:,2)     = X_tra(2)*ones(nl,1);
+% thetaC_i(:,3)     = X_pol(2)*ones(nl,1);
+% The second step is to compute the nondimensional BEM blade states using the function getBemNdBladeState at an interval of operation parameters between, for instance, 3 and 11. We define a cell of nondimensional blades in order to be able to loop through each blade.
+% 
+% lambda_i          = linspace(3,11,nl)';
+% ndBlade           = {ndOptBlade,ndPolBlade,ndTraBlade};
+% ndbs              = cell(3,1);
+% for i = 1:3
+%     ndbs{i}      = getBemNdBladeState(b,ndBlade{i},lambda_i,thetaC_i(:,i));
+% end
+%xo (lambda0, theta
+%goal es cp
